@@ -29,7 +29,10 @@ jinja2::Result<jinja2::ValuesMap> parse_json(const char *json_model)
 
 char *string_to_c(const std::string &str)
 {
-    char *cStr = new char[str.length() + 1];
-    strcpy(cStr, str.c_str());
+    char *cStr = (char *)malloc(str.length() + 1);
+    if (cStr)
+    {
+        strcpy(cStr, str.c_str());
+    }
     return cStr;
 }
