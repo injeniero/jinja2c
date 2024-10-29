@@ -14,6 +14,7 @@ int main()
     if (render_result.error)
     {
         printf("Error: %s\n", render_result.error);
+        free((void *)render_result.error);
         return 1;
     }
     else if (!render_result.result)
@@ -24,6 +25,7 @@ int main()
     else
     {
         printf("Output: %s\n", render_result.result);
+        free((void *)render_result.result);
     }
 
     FILE * f = fopen("test.tpl", "w");
