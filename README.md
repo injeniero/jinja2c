@@ -2,7 +2,8 @@
 A [jinja2cpp](https://github.com/jinja2cpp/Jinja2Cpp) interface for C.
 
 # Building
-You can build a static lib with: `$make shared` or `$make static`. This wrapper was tested against [Jinja2Cpp 1.3.2](https://github.com/jinja2cpp/Jinja2Cpp/tree/1.3.2)
+You can build a lib with: `$make shared` or `$make static`. YOu can build a static lib for ios wiht `$make ios`.
+This wrapper was tested against [Jinja2Cpp 1.3.2](https://github.com/jinja2cpp/Jinja2Cpp/tree/1.3.2)
 
 # API
 The exported API is split in two groups: Basic and Advanced.

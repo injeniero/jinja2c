@@ -97,6 +97,66 @@ shared: build/libjinja2cpp.dylib
 	@echo "Done"
 
 
+build/_deps/ios.toolchain.cmake:
+	wget https://raw.githubusercontent.com/leetal/ios-cmake/master/ios.toolchain.cmake -O build/_deps/ios.toolchain.cmake
+
+build/_deps/jinja2cpp_ios:
+	mkdir -p build/_deps
+	cd build/_deps && git clone git@github.com:jinja2cpp/Jinja2Cpp.git jinja2cpp_ios
+	cd build/_deps/jinja2cpp_ios && git checkout 1.3.2
+
+
+build/libjinja2cpp_ios_tmp.a: build/_deps/jinja2cpp_ios build/_deps/ios.toolchain.cmake
+	cd build/_deps/jinja2cpp_ios && cmake -B build -G Xcode -DCMAKE_TOOLCHAIN_FILE=../ios.toolchain.cmake -DPLATFORM=OS64 -DJINJA2CPP_STRICT_WARNINGS=OFF -DJINJA2CPP_BUILD_TESTS=OFF
+	cd build/_deps/jinja2cpp_ios && cmake  --build build --config Release -j8
+	cp build/_deps/jinja2cpp_ios/build/Release-iphoneos/libjinja2cpp.a build/libjinja2cpp_ios_tmp.a
+
+build/libfmt_ios.a: build/libjinja2cpp_ios.a
+	cp build/_deps/jinja2cpp_ios/build/_deps/fmt-build/Release-iphoneos/libfmt.a build/libfmt_ios.a
+
+IOS_CPP=$(shell xcrun -sdk iphoneos -find clang++)
+IOS_CPPFLAGS=-target arm64-apple-ios13.0 '-stdlib=libc++' '-std=gnu++14' -isysroot ${IOS_SDK}
+IOS_AR=$(shell xcrun -sdk iphoneos -find ar)
+IOS_SDK=$(shell xcrun --sdk iphoneos --show-sdk-path)
+ios: build/libjinja2cpp_ios_tmp.a build/libfmt_ios.a
+	${IOS_CPP} ${IOS_CPPFLAGS} \
+		-Ibuild/_deps/jinja2cpp_ios/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/variant-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/optional-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/string-view-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/rapidjson-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/rapidjson-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/expected-lite-src/include  \
+		-c src/basic_interface.cpp -o build/basic_interface.o
+
+	${IOS_CPP} ${IOS_CPPFLAGS} \
+		-Ibuild/_deps/jinja2cpp_ios/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/variant-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/optional-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/string-view-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/rapidjson-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/rapidjson-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/expected-lite-src/include  \
+		-c src/advanced_interface.cpp -o build/advanced_interface.o
+
+	${IOS_CPP}  ${IOS_CPPFLAGS}\
+		-Ibuild/_deps/jinja2cpp_ios/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/variant-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/optional-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/string-view-lite-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/rapidjson-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/rapidjson-src/include \
+		-Ibuild/_deps/jinja2cpp_ios/build/_deps/expected-lite-src/include  \
+		-c src/shared_internal.cpp -o build/shared_internal.o
+
+	cd build && ${IOS_AR} -x libjinja2cpp_ios_tmp.a
+	cd build && ${IOS_AR} -x libfmt_ios.a
+	cd build && ${IOS_AR} rcsv libjinja2cpp_ios_tmp.a *.o
+	mv build/libjinja2cpp_ios_tmp.a build/libjinja2cpp_ios.a
+	rm build/libfmt_ios.a build/*.o
+	@echo "Done"
+	
+
 clean:
 	rm -rf build
 	@echo "Done"
